@@ -27,12 +27,14 @@ def generateRP4learning(base: baseADM):
     )
     # Assigned solutions to the vector which has a minimum number of solutions
     sub_population_fitness = translated_cf[sub_population_index]
+
     # Distances of these solutions to the origin
     sub_pop_fitness_magnitude = np.sqrt(
         np.sum(np.power(sub_population_fitness, 2), axis=1)
     )
     # Index of the solution which has a minimum distance to the origin
     minidx = np.where(sub_pop_fitness_magnitude == np.nanmin(sub_pop_fitness_magnitude))
+
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
     # Create the reference point
@@ -80,3 +82,91 @@ def generateRP4decision(base: baseADM, max_assigned_vector):
     reference_point = np.squeeze(reference_point + ideal_cf)
     # reference_point = reference_point + ideal_cf
     return reference_point
+
+
+def generateRanges4learning(base: baseADM):
+
+    ideal_cf = base.ideal_point
+
+    translated_cf = base.translated_front
+
+    # Assigment of the solutions to the vectors
+    assigned_vectors = base.assigned_vectors
+
+    # Find the vector which has a minimum number of assigned solutions
+    number_assigned = np.bincount(assigned_vectors)
+    min_assigned_vector = np.atleast_1d(
+        np.squeeze(
+            np.where(
+                number_assigned == np.min(number_assigned[np.nonzero(number_assigned)])
+            )
+        )
+    )
+    sub_population_index = np.atleast_1d(
+        np.squeeze(np.where(assigned_vectors == min_assigned_vector[0]))
+        # If there are multiple vectors which have the minimum number of solutions, first one's index is used
+    )
+    # Assigned solutions to the vector which has a minimum number of solutions
+    sub_population_fitness = translated_cf[sub_population_index]
+
+    # Distances of these solutions to the origin
+    sub_pop_fitness_magnitude = np.sqrt(
+        np.sum(np.power(sub_population_fitness, 2), axis=1)
+    )
+    # Index of the solution which has a minimum distance to the origin
+    minidx = np.where(sub_pop_fitness_magnitude == np.nanmin(sub_pop_fitness_magnitude))
+
+    distance_selected = sub_pop_fitness_magnitude[minidx]
+
+    # Create the reference point
+    reference_point = distance_selected[0] * base.vectors.values[min_assigned_vector[0]]
+
+    # Distance between the reference point and the nearest solution
+    range = np.linalg.norm(reference_point - sub_population_fitness[minidx])
+
+    reference_point = np.squeeze(reference_point + ideal_cf)
+    temp = reference_point - range
+    # check this later if there is a need for controlling the minimum value, e.g. if smaller than ideal.
+    temp2 = reference_point + range
+
+    preferred_range = np.vstack((temp, temp2)).T
+    # preferred_range = np.squeeze(preferred_range + ideal_cf)
+
+    return preferred_range, reference_point
+
+
+def generateRanges4decision(base: baseADM, max_assigned_vector):
+
+    assigned_vectors = base.assigned_vectors
+
+    ideal_cf = base.ideal_point
+
+    translated_cf = base.translated_front
+
+    sub_population_index = np.atleast_1d(
+        np.squeeze(np.where(assigned_vectors == max_assigned_vector))
+    )
+    sub_population_fitness = translated_cf[sub_population_index]
+    # Distances of these solutions to the origin
+    sub_pop_fitness_magnitude = np.sqrt(
+        np.sum(np.power(sub_population_fitness, 2), axis=1)
+    )
+    # Index of the solution which has a minimum distance to the origin
+    minidx = np.where(sub_pop_fitness_magnitude == np.nanmin(sub_pop_fitness_magnitude))
+    distance_selected = sub_pop_fitness_magnitude[minidx]
+
+    # Create the reference point
+    reference_point = distance_selected[0] * base.vectors.values[max_assigned_vector]
+
+    # Distance between the reference point and the nearest solution
+    range = np.linalg.norm(reference_point - sub_population_fitness[minidx])
+
+    reference_point = np.squeeze(reference_point + ideal_cf)
+
+    temp = reference_point - range
+    # check this later if there is a need for controlling the minimum value, e.g. if smaller than ideal.
+    temp2 = reference_point + range
+
+    preferred_range = np.vstack((temp, temp2)).T
+
+    return preferred_range, reference_point
