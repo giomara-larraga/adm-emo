@@ -4,6 +4,8 @@ import pandas as pd
 import baseADM
 from baseADM import *
 import generatePreference as gp
+import visual
+from visual import *
 
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
 from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
@@ -193,7 +195,9 @@ for gen in num_gen_per_iter:
                 base = baseADM(cf, reference_vectors)
 
                 # generates the next reference point for the decision phase
-                response = gp.generateRP4decision(base, max_assigned_vector[0])
+                response = gp.generatePerturbatedRP4decision(
+                    base, max_assigned_vector[0]
+                )
 
                 data_row["reference_point"] = [
                     response,
