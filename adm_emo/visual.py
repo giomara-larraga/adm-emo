@@ -72,6 +72,32 @@ def visualize_2D_front_rp(front, rp):
     return fig
 
 
+def visualize_3D_front_ps(front, ps):
+    fig = go.Figure(
+        data=go.Scatter3d(
+            x=front[:, 0],
+            y=front[:, 1],
+            z=front[:, 2],
+            name="Composite front",
+            mode="markers",
+            marker_size=3,
+        )
+    )
+
+    for i in range(0, ps.shape[0]):
+        fig.add_trace(
+            go.Scatter3d(
+                x=[ps[i, 0]],
+                y=[ps[i, 1]],
+                z=[ps[i, 2]],
+                name="preferred solution #" + str(i + 1),
+                mode="markers",
+                marker_size=5,
+            )
+        )
+    return fig
+
+
 def visualize_3D_front_rp(front, rp):
     fig = go.Figure(
         data=go.Scatter3d(
