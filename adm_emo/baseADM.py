@@ -15,6 +15,37 @@ def generate_composite_front(*fronts):
     return cf
 
 
+def generate_composite_front_with_identity(*fronts):
+    # This is currently working for two fronts
+    # First two fronts should be the individual fronts from each algorithm to be compared
+    # This function counts the number of solutions provided to the composite front by each algorithm to be compared.
+
+    first_front = np.shape(fronts[0])
+    second_front = np.shape(fronts[1])
+
+    _fronts = np.vstack(fronts)
+    # print(nds(_fronts)[0][0])
+
+    temp = nds(_fronts)[0][0]
+    first_nds = temp[temp < first_front[0] - 1]
+    second_nds = temp[temp > first_front[0] - 1]
+
+    # Following lines are needed since composite front is keeping all the solutions from the very beginning.
+    # I am finding always the newly added nondominated solutions after each iteration by each algorithm
+    remaining_fronts = (first_front[0]) + (second_front[0])
+    remaining_nds = temp[temp > remaining_fronts]
+
+    # print(remaining_nds)
+
+    first = first_nds.shape[0]
+    second = second_nds.shape[0]
+    second -= remaining_nds.shape[0]
+
+    cf = _fronts[temp]
+
+    return first, second, cf
+
+
 def translate_front(front, ideal):
     translated_front = np.subtract(front, ideal)
     return translated_front
@@ -38,10 +69,10 @@ def assign_vectors(front, vectors: ReferenceVectors):
     if cosine[np.where(cosine < 0)].size:
         cosine[np.where(cosine < 0)] = 0
 
-    # theta = np.arccos(cosine) #check this theta later, if needed or not
+    theta = np.arccos(cosine)  # check this theta later, if needed or not
     assigned_vectors = np.argmax(cosine, axis=1)
 
-    return assigned_vectors
+    return assigned_vectors, theta
 
 
 class baseADM:
@@ -56,4 +87,6 @@ class baseADM:
         self.normalized_front = normalize_front(
             self.composite_front, self.translated_front
         )
-        self.assigned_vectors = assign_vectors(self.normalized_front, self.vectors)
+        self.assigned_vectors, self.theta = assign_vectors(
+            self.normalized_front, self.vectors
+        )

@@ -80,6 +80,7 @@ def generateRP4decision(base: baseADM, max_assigned_vector):
     # Create the reference point
     reference_point = distance_selected[0] * base.vectors.values[max_assigned_vector]
     reference_point = np.squeeze(reference_point + ideal_cf)
+
     # reference_point = reference_point + ideal_cf
     return reference_point
 
@@ -98,7 +99,7 @@ def generatePerturbatedRP4decision(base: baseADM, max_assigned_vector):
     )
     sub_population_fitness = translated_cf[sub_population_index]
 
-    angles = theta[sub_population_index, max_assigned_vector]
+    # angles = theta[sub_population_index, max_assigned_vector]
     # angles = np.divide(angles)
     # print(angles)
     # Distances of these solutions to the origin
@@ -109,18 +110,28 @@ def generatePerturbatedRP4decision(base: baseADM, max_assigned_vector):
     minidx = np.where(sub_pop_fitness_magnitude == np.nanmin(sub_pop_fitness_magnitude))
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
-    aminidx = np.where(angles == np.nanmin(angles))
-    # print(aminidx)
+    # aminidx = np.where(angles == np.nanmin(angles))
+
     # Create the reference point
     reference_point = distance_selected[0] * base.vectors.values[max_assigned_vector]
 
+    # Find the distance from the nearest solution to the reference point
+    distance = min(np.linalg.norm(reference_point - i) for i in sub_population_fitness)
+
+    # nearest = np.squeeze(sub_population_fitness[aminidx] + ideal_cf)
+
+    # distance = np.linalg.norm(nearest - reference_point)
+    # print("distance", distance)
+
     reference_point = np.squeeze(reference_point + ideal_cf)
 
-    nearest = sub_population_fitness[aminidx] + ideal_cf
-    # print(nearest)
-    distance = np.linalg.norm(nearest - reference_point)
     reference_point = np.squeeze(reference_point - distance)
-    # reference_point = reference_point + ideal_cf
+
+    # The following line is to make sure that the components of the reference point cannot be smaller than the components of the ideal point
+    # update the following line if the ideal point is not zero
+    reference_point[reference_point < 0] = np.finfo(float).eps
+    # print(reference_point)
+
     return reference_point
 
 
@@ -162,12 +173,14 @@ def generateRanges4learning(base: baseADM):
     reference_point = distance_selected[0] * base.vectors.values[min_assigned_vector[0]]
 
     # Distance between the reference point and the nearest solution
-    range = np.linalg.norm(reference_point - sub_population_fitness[minidx])
+    distance = min(np.linalg.norm(reference_point - i) for i in sub_population_fitness)
 
     reference_point = np.squeeze(reference_point + ideal_cf)
-    temp = reference_point - range
-    # check this later if there is a need for controlling the minimum value, e.g. if smaller than ideal.
-    temp2 = reference_point + range
+
+    temp = reference_point - distance
+    # change the following line if the ideal point is different than zero
+    temp[temp < 0] = np.finfo(float).eps
+    temp2 = reference_point + distance
 
     preferred_range = np.vstack((temp, temp2)).T
     # preferred_range = np.squeeze(preferred_range + ideal_cf)
@@ -199,13 +212,22 @@ def generateRanges4decision(base: baseADM, max_assigned_vector):
     reference_point = distance_selected[0] * base.vectors.values[max_assigned_vector]
 
     # Distance between the reference point and the nearest solution
-    range = np.linalg.norm(reference_point - sub_population_fitness[minidx])
+    distance = min(np.linalg.norm(reference_point - i) for i in sub_population_fitness)
 
     reference_point = np.squeeze(reference_point + ideal_cf)
 
-    temp = reference_point - range
-    # check this later if there is a need for controlling the minimum value, e.g. if smaller than ideal.
-    temp2 = reference_point + range
+    # This is for perturbating the reference point by using the distance between the nearest solution to the reference point
+    reference_point = np.squeeze(reference_point - distance)
+
+    # The following line is to make sure that the components of the reference point cannot be smaller than the components of the ideal point
+    # update the following line if the ideal point is not zero
+    reference_point[reference_point < 0] = np.finfo(float).eps
+
+    temp = reference_point - distance
+    # change the following line if the ideal point is different than zero
+    temp[temp < 0] = np.finfo(float).eps
+
+    temp2 = reference_point + distance
 
     preferred_range = np.vstack((temp, temp2)).T
 
