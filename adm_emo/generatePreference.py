@@ -135,7 +135,7 @@ def generatePerturbatedRP4decision(base: baseADM, max_assigned_vector):
     return reference_point
 
 
-def generateRanges4learning(base: baseADM):
+def generateRanges4learning(base: baseADM, true_ideal, true_nadir):
 
     ideal_cf = base.ideal_point
 
@@ -179,16 +179,32 @@ def generateRanges4learning(base: baseADM):
 
     temp = reference_point - distance
     # change the following line if the ideal point is different than zero
-    temp[temp < 0] = np.finfo(float).eps
     temp2 = reference_point + distance
+
+    for i in range(reference_point.shape[0]):
+        if reference_point[i] < true_ideal[i]:
+            reference_point[i] = true_ideal[i]
+        if reference_point[i] > true_nadir[i]:
+            reference_point[i] = true_nadir[i]
+        if temp[i] < true_ideal[i]:
+            temp[i] = true_ideal[i]
+        if temp[i] > true_nadir[i]:
+            temp[i] = true_nadir[i]
+        if temp2[i] < true_ideal[i]:
+            temp2[i] = true_ideal[i]
+        if temp2[i] > true_nadir[i]:
+            temp2[i] = true_nadir[i]
 
     preferred_range = np.vstack((temp, temp2)).T
     # preferred_range = np.squeeze(preferred_range + ideal_cf)
 
+    # desdeo_emo is expecting ranges as list, therefore, array is converted to list.
+    # preferred_range = preferred_range.tolist()
+
     return preferred_range, reference_point
 
 
-def generateRanges4decision(base: baseADM, max_assigned_vector):
+def generateRanges4decision(base: baseADM, max_assigned_vector, true_ideal, true_nadir):
 
     assigned_vectors = base.assigned_vectors
 
@@ -221,16 +237,29 @@ def generateRanges4decision(base: baseADM, max_assigned_vector):
 
     # The following line is to make sure that the components of the reference point cannot be smaller than the components of the ideal point
     # update the following line if the ideal point is not zero
-    reference_point[reference_point < 0] = np.finfo(float).eps
 
     temp = reference_point - distance
     # change the following line if the ideal point is different than zero
-    temp[temp < 0] = np.finfo(float).eps
-
     temp2 = reference_point + distance
+
+    for i in range(reference_point.shape[0]):
+        if reference_point[i] < true_ideal[i]:
+            reference_point[i] = true_ideal[i]
+        if reference_point[i] > true_nadir[i]:
+            reference_point[i] = true_nadir[i]
+        if temp[i] < true_ideal[i]:
+            temp[i] = true_ideal[i]
+        if temp[i] > true_nadir[i]:
+            temp[i] = true_nadir[i]
+        if temp2[i] < true_ideal[i]:
+            temp2[i] = true_ideal[i]
+        if temp2[i] > true_nadir[i]:
+            temp2[i] = true_nadir[i]
 
     preferred_range = np.vstack((temp, temp2)).T
 
+    # desdeo_emo is expecting ranges as list, therefore, array is converted to list.
+    # preferred_range = preferred_range.tolist()
     return preferred_range, reference_point
 
 

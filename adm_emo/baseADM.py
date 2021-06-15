@@ -76,9 +76,7 @@ def assign_vectors(front, vectors: ReferenceVectors):
 
 
 class baseADM:
-    def __init__(
-        self, composite_front, vectors: ReferenceVectors,
-    ):
+    def __init__(self, composite_front, vectors: ReferenceVectors):
 
         self.composite_front = composite_front
         self.vectors = vectors
