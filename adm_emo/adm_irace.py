@@ -22,7 +22,69 @@ from sklearn.preprocessing import Normalizer
 
 #Configuration.show_compile_hint = False
 
+def learning_phase(data_row, i, problem_name, n_obj, cf, reference_vectors):
+    # learning phase
+    data_row[["problem", "num_obj", "iteration"]] = [
+        problem_name,
+        n_obj,
+        i + 1,
+    ]
 
+    # After this class call, solutions inside the composite front are assigned to reference vectors
+    base = baseADM(cf, reference_vectors)
+    # generates the next reference point for the next iteration in the learning phase
+    response = gp.generateRP4learning(base)
+
+    data_row["reference_point"] = [
+        response,
+    ]
+
+    # run algorithms with the new reference point
+    pref_int_rvea.response = pd.DataFrame(
+        [response], columns=pref_int_rvea.content["dimensions_data"].columns
+    )
+    pref_int_nsga.response = pd.DataFrame(
+        [response], columns=pref_int_nsga.content["dimensions_data"].columns
+    )
+
+    _, pref_int_rvea = int_rvea.iterate(pref_int_rvea)
+    _, pref_int_nsga = int_nsga.iterate(pref_int_nsga)
+
+    # extend composite front with newly obtained solutions
+    cf = generate_composite_front(
+        cf, int_rvea.population.objectives, int_nsga.population.objectives
+    )
+
+    # R-metric calculation
+    ref_point = response.reshape(1, n_obj)
+
+    # normalize reference point
+    rp_transformer = Normalizer().fit(ref_point)
+    norm_rp = rp_transformer.transform(ref_point)
+
+    rmetric = rm.RMetric(problemR, norm_rp)
+
+    # normalize solutions before sending r-metric
+    rvea_transformer = Normalizer().fit(int_rvea.population.objectives)
+    norm_rvea = rvea_transformer.transform(int_rvea.population.objectives)
+
+    nsga_transformer = Normalizer().fit(int_nsga.population.objectives)
+    norm_nsga = nsga_transformer.transform(int_nsga.population.objectives)
+
+    # R-metric calls for R_IGD and R_HV
+    rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_nsga)
+    rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_rvea)
+
+    data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
+        rigd_irvea,
+        rhv_irvea,
+    ]
+    data_row[["iNSGAIII" + excess_col for excess_col in excess_columns]] = [
+        rigd_insga,
+        rhv_insga,
+    ]
+
+    data = data.append(data_row, ignore_index=1)
 #---------------------------------------
 
 problem_names = ["VCW", "CSI", "RPP", "MCB"]
@@ -35,7 +97,7 @@ algorithms = ["iRVEA", "iNSGAIII"]  # algorithms to be compared
 
 # the followings are for formatting results
 column_names = (
-    ["problem", "num_obj", "iteration", "num_gens", "reference_point"]
+    ["problem", "num_obj", "iteration", "reference_point"]
     + [algorithm + "_R_HV" for algorithm in algorithms]
 )
 excess_columns = [
@@ -58,6 +120,7 @@ for gen in num_gen_per_iter:
         counter += 1
         problem = problems[idxp]
         n_obj = n_objs[idxp]
+        problem_name = problem_names[idxp]
         
         # interactive
         int_rvea = RVEA(problem=problem, interact=True, n_gen_per_iter=gen)
@@ -87,70 +150,7 @@ for gen in num_gen_per_iter:
         # creates uniformly distributed reference vectors
         reference_vectors = ReferenceVectors(lattice_resolution, n_obj)
 
-        # learning phase
-        for i in range(L):
-            data_row[["problem", "num_obj", "iteration", "num_gens"]] = [
-                problem_name,
-                n_obj,
-                i + 1,
-                gen,
-            ]
-
-            # After this class call, solutions inside the composite front are assigned to reference vectors
-            base = baseADM(cf, reference_vectors)
-            # generates the next reference point for the next iteration in the learning phase
-            response = gp.generateRP4learning(base)
-
-            data_row["reference_point"] = [
-                response,
-            ]
-
-            # run algorithms with the new reference point
-            pref_int_rvea.response = pd.DataFrame(
-                [response], columns=pref_int_rvea.content["dimensions_data"].columns
-            )
-            pref_int_nsga.response = pd.DataFrame(
-                [response], columns=pref_int_nsga.content["dimensions_data"].columns
-            )
-
-            _, pref_int_rvea = int_rvea.iterate(pref_int_rvea)
-            _, pref_int_nsga = int_nsga.iterate(pref_int_nsga)
-
-            # extend composite front with newly obtained solutions
-            cf = generate_composite_front(
-                cf, int_rvea.population.objectives, int_nsga.population.objectives
-            )
-
-            # R-metric calculation
-            ref_point = response.reshape(1, n_obj)
-
-            # normalize reference point
-            rp_transformer = Normalizer().fit(ref_point)
-            norm_rp = rp_transformer.transform(ref_point)
-
-            rmetric = rm.RMetric(problemR, norm_rp, pf=pareto_front)
-
-            # normalize solutions before sending r-metric
-            rvea_transformer = Normalizer().fit(int_rvea.population.objectives)
-            norm_rvea = rvea_transformer.transform(int_rvea.population.objectives)
-
-            nsga_transformer = Normalizer().fit(int_nsga.population.objectives)
-            norm_nsga = nsga_transformer.transform(int_nsga.population.objectives)
-
-            # R-metric calls for R_IGD and R_HV
-            rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_nsga)
-            rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_rvea)
-
-            data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
-                rigd_irvea,
-                rhv_irvea,
-            ]
-            data_row[["iNSGAIII" + excess_col for excess_col in excess_columns]] = [
-                rigd_insga,
-                rhv_insga,
-            ]
-
-            data = data.append(data_row, ignore_index=1)
+        
 
         # Decision phase
         # After the learning phase the reference vector which has the maximum number of assigned solutions forms ROI
