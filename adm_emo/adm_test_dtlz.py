@@ -6,17 +6,17 @@ from baseADM import *
 import generatePreference as gp
 
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
-from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
+from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
-from desdeo_emo.EAs.RVEA import RVEA
-from desdeo_emo.EAs.NSGAIII import NSGAIII
+from desdeo_emo.EAs.MOEAD_NUMS import MOEA_D_NUMS
+from desdeo_emo.EAs.MOEAD_NUMS_PLUS import MOEA_D_NUMS_PLUS
 
 from pymoo.factory import get_problem, get_reference_directions
 import rmetric as rm
 from sklearn.preprocessing import Normalizer
-from pymoo.configuration import Configuration
+#from pymoo.configuration import Configuration
 
-Configuration.show_compile_hint = False
+#Configuration.show_compile_hint = False
 
 problem_names = ["DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4"]
 n_objs = np.asarray([3, 4, 5, 6, 7, 8, 9])  # number of objectives
@@ -25,7 +25,7 @@ n_vars = K + n_objs - 1  # number of variables
 
 num_gen_per_iter = [50]  # number of generations per iteration
 
-algorithms = ["iRVEA", "iNSGAIII"]  # algorithms to be compared
+algorithms = ["MOEA/D-NUMS", "MOEA/D-NUMS+"]  # algorithms to be compared
 
 # the followings are for formatting results
 column_names = (
@@ -63,28 +63,28 @@ for gen in num_gen_per_iter:
             true_nadir = np.asarray([1] * n_obj)
 
             # interactive
-            int_rvea = RVEA(problem=problem, interact=True, n_gen_per_iter=gen)
-            int_nsga = NSGAIII(problem=problem, interact=True, n_gen_per_iter=gen)
+            int_nums = MOEA_D_NUMS(problem=problem, interact=True, n_gen_per_iter=gen)
+            int_nums_plus = MOEA_D_NUMS_PLUS(problem=problem, interact=True, n_gen_per_iter=gen)
 
             # initial reference point is specified randomly
             response = np.random.rand(n_obj)
 
             # run algorithms once with the randomly generated reference point
-            _, pref_int_rvea = int_rvea.requests()
-            _, pref_int_nsga = int_nsga.requests()
-            pref_int_rvea.response = pd.DataFrame(
-                [response], columns=pref_int_rvea.content["dimensions_data"].columns
+            _, pref_int_nums = int_nums.requests()
+            _, pref_int_nums_plus = int_nums_plus.requests()
+            pref_int_nums.response = pd.DataFrame(
+                [response], columns=pref_int_nums.content["dimensions_data"].columns
             )
-            pref_int_nsga.response = pd.DataFrame(
-                [response], columns=pref_int_nsga.content["dimensions_data"].columns
+            pref_int_nums_plus.response = pd.DataFrame(
+                [response], columns=pref_int_nums_plus.content["dimensions_data"].columns
             )
 
-            _, pref_int_rvea = int_rvea.iterate(pref_int_rvea)
-            _, pref_int_nsga = int_nsga.iterate(pref_int_nsga)
+            _, pref_int_nums = int_nums.iterate(pref_int_nums)
+            _, pref_int_nums_plus = int_nums_plus.iterate(pref_int_nums_plus)
 
             # build initial composite front
             cf = generate_composite_front(
-                int_rvea.population.objectives, int_nsga.population.objectives
+                int_nums.population.objectives, int_nums_plus.population.objectives
             )
 
             # the following two lines for getting pareto front by using pymoo framework
@@ -114,19 +114,19 @@ for gen in num_gen_per_iter:
                 ]
 
                 # run algorithms with the new reference point
-                pref_int_rvea.response = pd.DataFrame(
-                    [response], columns=pref_int_rvea.content["dimensions_data"].columns
+                pref_int_nums.response = pd.DataFrame(
+                    [response], columns=pref_int_nums.content["dimensions_data"].columns
                 )
-                pref_int_nsga.response = pd.DataFrame(
-                    [response], columns=pref_int_nsga.content["dimensions_data"].columns
+                pref_int_nums_plus.response = pd.DataFrame(
+                    [response], columns=pref_int_nums_plus.content["dimensions_data"].columns
                 )
 
-                _, pref_int_rvea = int_rvea.iterate(pref_int_rvea)
-                _, pref_int_nsga = int_nsga.iterate(pref_int_nsga)
+                _, pref_int_nums = int_nums.iterate(pref_int_nums)
+                _, pref_int_nums_plus = int_nums_plus.iterate(pref_int_nums_plus)
 
                 # extend composite front with newly obtained solutions
                 cf = generate_composite_front(
-                    cf, int_rvea.population.objectives, int_nsga.population.objectives
+                    cf, int_nums.population.objectives, int_nums_plus.population.objectives
                 )
 
                 # R-metric calculation
@@ -139,23 +139,23 @@ for gen in num_gen_per_iter:
                 rmetric = rm.RMetric(problemR, norm_rp, pf=pareto_front)
 
                 # normalize solutions before sending r-metric
-                rvea_transformer = Normalizer().fit(int_rvea.population.objectives)
-                norm_rvea = rvea_transformer.transform(int_rvea.population.objectives)
+                NUMS_transformer = Normalizer().fit(int_nums.population.objectives)
+                norm_NUMS = NUMS_transformer.transform(int_nums.population.objectives)
 
-                nsga_transformer = Normalizer().fit(int_nsga.population.objectives)
-                norm_nsga = nsga_transformer.transform(int_nsga.population.objectives)
+                NUMS_PLUS_transformer = Normalizer().fit(int_nums_plus.population.objectives)
+                norm_NUMS_PLUS = NUMS_PLUS_transformer.transform(int_nums_plus.population.objectives)
 
                 # R-metric calls for R_IGD and R_HV
-                rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_nsga)
-                rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_rvea)
+                rigd_NUMS, rhv_NUMS = rmetric.calc(norm_NUMS, others=norm_NUMS_PLUS)
+                rigd_NUMS_PLUS, rhv_NUMS_PLUS = rmetric.calc(norm_NUMS_PLUS, others=norm_NUMS)
 
-                data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
-                    rigd_irvea,
-                    rhv_irvea,
+                data_row[["NUMS" + excess_col for excess_col in excess_columns]] = [
+                    rigd_NUMS,
+                    rhv_NUMS,
                 ]
-                data_row[["iNSGAIII" + excess_col for excess_col in excess_columns]] = [
-                    rigd_insga,
-                    rhv_insga,
+                data_row[["NUMS_P" + excess_col for excess_col in excess_columns]] = [
+                    rigd_NUMS_PLUS,
+                    rhv_NUMS_PLUS,
                 ]
 
                 data = data.append(data_row, ignore_index=1)
@@ -183,19 +183,19 @@ for gen in num_gen_per_iter:
                 ]
 
                 # run algorithms with the new reference point
-                pref_int_rvea.response = pd.DataFrame(
-                    [response], columns=pref_int_rvea.content["dimensions_data"].columns
+                pref_int_nums.response = pd.DataFrame(
+                    [response], columns=pref_int_nums.content["dimensions_data"].columns
                 )
-                pref_int_nsga.response = pd.DataFrame(
-                    [response], columns=pref_int_nsga.content["dimensions_data"].columns
+                pref_int_nums_plus.response = pd.DataFrame(
+                    [response], columns=pref_int_nums_plus.content["dimensions_data"].columns
                 )
 
-                _, pref_int_rvea = int_rvea.iterate(pref_int_rvea)
-                _, pref_int_nsga = int_nsga.iterate(pref_int_nsga)
+                _, pref_int_nums = int_nums.iterate(pref_int_nums)
+                _, pref_int_nums_plus = int_nums_plus.iterate(pref_int_nums_plus)
 
                 # extend composite front with newly obtained solutions
                 cf = generate_composite_front(
-                    cf, int_rvea.population.objectives, int_nsga.population.objectives
+                    cf, int_nums.population.objectives, int_nums_plus.population.objectives
                 )
 
                 # R-metric calculation
@@ -208,22 +208,22 @@ for gen in num_gen_per_iter:
                 rmetric = rm.RMetric(problemR, norm_rp, delta=0.2, pf=pareto_front)
 
                 # normalize solutions before sending r-metric
-                rvea_transformer = Normalizer().fit(int_rvea.population.objectives)
-                norm_rvea = rvea_transformer.transform(int_rvea.population.objectives)
+                NUMS_transformer = Normalizer().fit(int_nums.population.objectives)
+                norm_NUMS = NUMS_transformer.transform(int_nums.population.objectives)
 
-                nsga_transformer = Normalizer().fit(int_nsga.population.objectives)
-                norm_nsga = nsga_transformer.transform(int_nsga.population.objectives)
+                NUMS_PLUS_transformer = Normalizer().fit(int_nums_plus.population.objectives)
+                norm_NUMS_PLUS = NUMS_PLUS_transformer.transform(int_nums_plus.population.objectives)
 
-                rigd_irvea, rhv_irvea = rmetric.calc(norm_rvea, others=norm_nsga)
-                rigd_insga, rhv_insga = rmetric.calc(norm_nsga, others=norm_rvea)
+                rigd_NUMS, rhv_NUMS = rmetric.calc(norm_NUMS, others=norm_NUMS_PLUS)
+                rigd_NUMS_PLUS, rhv_NUMS_PLUS = rmetric.calc(norm_NUMS_PLUS, others=norm_NUMS)
 
-                data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
-                    rigd_irvea,
-                    rhv_irvea,
+                data_row[["NUMS" + excess_col for excess_col in excess_columns]] = [
+                    rigd_NUMS,
+                    rhv_NUMS,
                 ]
-                data_row[["iNSGAIII" + excess_col for excess_col in excess_columns]] = [
-                    rigd_insga,
-                    rhv_insga,
+                data_row[["NUMS+" + excess_col for excess_col in excess_columns]] = [
+                    rigd_NUMS_PLUS,
+                    rhv_NUMS_PLUS,
                 ]
 
                 data = data.append(data_row, ignore_index=1)
