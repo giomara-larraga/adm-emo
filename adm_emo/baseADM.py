@@ -2,7 +2,7 @@ import numpy as np
 
 # import plotly.graph_objects as go
 
-from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
+from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 from pygmo import fast_non_dominated_sorting as nds
 
 

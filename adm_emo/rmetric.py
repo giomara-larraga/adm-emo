@@ -14,9 +14,9 @@
 import numpy as np
 from scipy.spatial.distance import cdist
 
-from pymoo.model.indicator import Indicator
-from pymoo.performance_indicator.hv import Hypervolume
-from pymoo.performance_indicator.igd import IGD
+from pymoo.core.indicator import Indicator
+from pymoo.indicators.hv import Hypervolume
+from pymoo.indicators.igd import IGD
 
 
 class RMetric(Indicator):
@@ -204,7 +204,7 @@ class RMetric(Indicator):
         if len(translated) > 0:
 
             # IGD Computation
-            rigd = IGD(final_PF).calc(translated)
+            rigd = IGD(final_PF).do(translated)
 
             nadir_point = np.amax(self.w_points, axis=0)
             front = translated

@@ -6,7 +6,7 @@ from baseADM import *
 import generatePreference as gp
 
 from desdeo_problem.testproblems.TestProblems import test_problem_builder
-from desdeo_emo.othertools.ReferenceVectors import ReferenceVectors
+from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
 from desdeo_emo.EAs.RVEA import RVEA
 from desdeo_emo.EAs.NSGAIII import NSGAIII
@@ -14,9 +14,9 @@ from desdeo_emo.EAs.NSGAIII import NSGAIII
 from pymoo.factory import get_problem, get_reference_directions
 import rmetric as rm
 from sklearn.preprocessing import Normalizer
-from pymoo.configuration import Configuration
+#from pymoo.config import Configuration
 
-Configuration.show_compile_hint = False
+#Configuration.show_compile_hint = False
 
 problem_names = ["DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4"]
 n_objs = np.asarray([3, 4, 5, 6, 7, 8, 9])  # number of objectives
@@ -72,8 +72,8 @@ for run in range(total_run):
                 response = np.random.rand(n_obj)
 
                 # run algorithms once with the randomly generated reference point
-                _, pref_int_rvea = int_rvea.requests()
-                _, pref_int_nsga = int_nsga.requests()
+                pref_int_rvea,_ = int_rvea.requests()
+                pref_int_nsga,_ = int_nsga.requests()
                 pref_int_rvea[2].response = pd.DataFrame(
                     [response],
                     columns=pref_int_rvea[2].content["dimensions_data"].columns,
@@ -83,8 +83,8 @@ for run in range(total_run):
                     columns=pref_int_nsga[2].content["dimensions_data"].columns,
                 )
 
-                _, pref_int_rvea = int_rvea.iterate(pref_int_rvea[2])
-                _, pref_int_nsga = int_nsga.iterate(pref_int_nsga[2])
+                pref_int_rvea,_ = int_rvea.iterate(pref_int_rvea[2])
+                pref_int_nsga,_ = int_nsga.iterate(pref_int_nsga[2])
 
                 # build initial composite front
                 (
@@ -131,8 +131,8 @@ for run in range(total_run):
                     )
                     previous_RVEA_FEs = int_rvea._function_evaluation_count
                     previous_NSGA_FEs = int_nsga._function_evaluation_count
-                    _, pref_int_rvea = int_rvea.iterate(pref_int_rvea[2])
-                    _, pref_int_nsga = int_nsga.iterate(pref_int_nsga[2])
+                    pref_int_rvea,_ = int_rvea.iterate(pref_int_rvea[2])
+                    pref_int_nsga,_ = int_nsga.iterate(pref_int_nsga[2])
 
                     peritr_RVEA_FEs = (
                         int_rvea._function_evaluation_count - previous_RVEA_FEs
@@ -223,8 +223,8 @@ for run in range(total_run):
                     )
                     previous_RVEA_FEs = int_rvea._function_evaluation_count
                     previous_NSGA_FEs = int_nsga._function_evaluation_count
-                    _, pref_int_rvea = int_rvea.iterate(pref_int_rvea[2])
-                    _, pref_int_nsga = int_nsga.iterate(pref_int_nsga[2])
+                    pref_int_rvea,_ = int_rvea.iterate(pref_int_rvea[2])
+                    pref_int_nsga,_ = int_nsga.iterate(pref_int_nsga[2])
 
                     peritr_RVEA_FEs = (
                         int_rvea._function_evaluation_count - previous_RVEA_FEs
