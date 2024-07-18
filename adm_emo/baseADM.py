@@ -2,7 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
-from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
+from pymoo.util.nds.non_dominated_sorting import find_non_dominated
 
 
 def visualize_2D_front_rvs(front, vectors: ReferenceVectors):
@@ -104,7 +104,8 @@ def generate_composite_front(*fronts):
 
     _fronts = np.vstack(fronts)
 
-    cf = _fronts[nds(_fronts)[0][0]]
+  
+    cf = _fronts[find_non_dominated(_fronts)]
 
     return cf
 
@@ -125,8 +126,8 @@ def normalize_front(front, translated_front):
     return normalized_front
 
 
-def assign_vectors(front, vectors: ReferenceVectors):
-    cosine = np.dot(front, np.transpose(vectors.values))
+def assign_vectors(front, vectors):
+    cosine = np.dot(front, np.transpose(vectors))
     if cosine[np.where(cosine > 1)].size:
         cosine[np.where(cosine > 1)] = 1
     if cosine[np.where(cosine < 0)].size:

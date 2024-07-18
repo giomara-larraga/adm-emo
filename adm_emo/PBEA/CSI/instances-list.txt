@@ -1,0 +1,26 @@
+## This is an example of specifying a list of instances.
+
+# Each line is an instance relative to trainInstancesDir/testInstancesdir
+# unless set to "" (see scenario.txt.tmpl) and an optional sequence of
+# instance-specific parameters that will be passed to target-runner when
+# invoked on that instance.
+
+# Empty lines and comments are ignored.
+#non-dominated point
+#3 objectives
+--prob DTLZ1 --id 4 --obj 3 --var 7  --rp 0.05,0.05,0.2 --generations 400 --mu 0.1
+--prob DTLZ2 --id 5 --obj 3 --var 12 --rp 0.2,0.5,0.6 --generations 400 --mu 0.1
+--prob DTLZ3 --id 5 --obj 3 --var 12 --rp 0.2,0.5,0.6 --generations 400 --mu 0.1
+--prob DTLZ4 --id 5 --obj 3 --var 12 --rp 0.2,0.5,0.6 --generations 400 --mu 0.1
+--prob DTLZ5 --id 6 --obj 3 --var 12 --rp 0.1,0.3,0.5 --generations 400 --mu 0.1
+--prob DTLZ6 --id 6 --obj 3 --var 12 --rp 0.1,0.3,0.5 --generations 400 --mu 0.1
+--prob WFG1 --id 9 --obj 3 --var 14 --rp 1.23910631,2.44637419,5.5527944 --generations 400 --mu 0.1
+--prob WFG2 --id 10 --obj 3 --var 14 --rp 1.30967692,0.99346475,4.47116006 --generations 400 --mu 0.1
+--prob WFG3 --id 11 --obj 3 --var 14 --rp 0.5630203,1.79517005,5.33063833 --generations 400 --mu 0.1
+--prob WFG4 --id 12 --obj 3 --var 14 --rp 1.31993029,3.41135828,4.5660427 --generations 400 --mu 0.1
+--prob WFG5 --id 13 --obj 3 --var 14 --rp 0.33235522,2.60061373,5.14478791 --generations 400 --mu 0.1
+--prob WFG6 --id 14 --obj 3 --var 14 --rp 1.07531107,2.46361268,4.99810657 --generations 400 --mu 0.1
+--prob WFG7 --id 15 --obj 3 --var 14 --rp 0.97091881,3.58944958,5.54646309 --generations 400 --mu 0.1
+--prob WFG8 --id 16 --obj 3 --var 14 --rp 1.59112024,3.25464029,4.22527344 --generations 400 --mu 0.1
+--prob WFG9 --id 17 --obj 3 --var 14 --rp 1.91920752,2.77433314,4.1798446 --generations 400 --mu 0.1
+

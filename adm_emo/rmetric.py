@@ -14,9 +14,9 @@
 import numpy as np
 from scipy.spatial.distance import cdist
 
-from pymoo.model.indicator import Indicator
-from pymoo.performance_indicator.hv import Hypervolume
-from pymoo.performance_indicator.igd import IGD
+from pymoo.core.indicator import Indicator
+from pymoo.indicators.hv import Hypervolume
+
 
 
 class RMetric(Indicator):

@@ -72,10 +72,10 @@ for gen in num_gen_per_iter:
             # run algorithms once with the randomly generated reference point
             _, pref_int_rvea = int_rvea.requests()
             _, pref_int_nsga = int_nsga.requests()
-            pref_int_rvea.response = pd.DataFrame(
+            pref_int_rvea[2].response = pd.DataFrame(
                 [response], columns=pref_int_rvea.content["dimensions_data"].columns
             )
-            pref_int_nsga.response = pd.DataFrame(
+            pref_int_nsga[2].response = pd.DataFrame(
                 [response], columns=pref_int_nsga.content["dimensions_data"].columns
             )
 

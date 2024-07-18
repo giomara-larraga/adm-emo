@@ -36,10 +36,10 @@ def generateRP4learning(base: baseADM):
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
     # Create the reference point
-    reference_point = distance_selected[0] * base.vectors.values[min_assigned_vector[0]]
+    reference_point = distance_selected[0] * base.vectors[min_assigned_vector[0]]
     reference_point = np.squeeze(reference_point + ideal_cf)
     # reference_point = reference_point + ideal_cf
-    return reference_point
+    return np.array(reference_point)
 
 
 def get_max_assigned_vector(assigned_vectors):
@@ -76,7 +76,7 @@ def generateRP4decision(base: baseADM, max_assigned_vector):
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
     # Create the reference point
-    reference_point = distance_selected[0] * base.vectors.values[max_assigned_vector]
+    reference_point = distance_selected[0] * base.vectors[max_assigned_vector]
     reference_point = np.squeeze(reference_point + ideal_cf)
     # reference_point = reference_point + ideal_cf
     return reference_point
