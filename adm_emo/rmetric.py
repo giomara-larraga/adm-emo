@@ -15,9 +15,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from pymoo.core.indicator import Indicator
-from pymoo.indicators.hv import Hypervolume
-
-
+from pygmo import hypervolume
 
 class RMetric(Indicator):
     def __init__(self, problem, ref_points, w=None, delta=0.3, pf=None):
@@ -180,17 +178,13 @@ class RMetric(Indicator):
                 )
                 translated.extend(pop_t)
 
-        rhv = None, None
-
+        rhv = None
         if len(translated) > 0:
             nadir_point = np.amax(self.w_points, axis=0)
             front = translated
-            if calc_hv:
-                try:
-                    rhv = Hypervolume(ref_point=nadir_point).calc(front)
-                except:
-                    pass
 
-        
+            hv = hypervolume(front)
+            rhv = hv.compute(nadir_point)
+
         return rhv
        

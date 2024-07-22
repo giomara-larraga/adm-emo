@@ -10,9 +10,12 @@ from RiverPollutionProblem import river_pollution_problem
 from CarSideImpact import car_side_impact
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
-from desdeo_emo.EAs.NSGAIII import NSGAIII as RVEA
+#from desdeo_emo.EAs.NSGAIII import NSGAIII as RVEA
 from desdeo_emo.EAs.PBEA import PBEA
 from desdeo_emo.EAs.IBEA import IBEA
+
+from EA import NSGAIII_archive as RVEA
+from EA import archiver
 
 from pymoo.util.ref_dirs import get_reference_directions
 import rmetric as rm
@@ -26,17 +29,16 @@ def initialize_pbea(problem, population_size, gens):
     ini_pop = ib.population
     return ini_pop
 
-dict_problems = dict([('VCW', vehicle_crashworthiness()), ('CSI', car_side_impact()), ('RPP', river_pollution_problem())])
+#dict_problems = dict([('VCW', vehicle_crashworthiness()), ('CSI', car_side_impact()), ('RPP', river_pollution_problem())])
 dict_algorithms = dict([('RVEA', RVEA), ('PBEA', PBEA)])
+dict_problems = dict([('VCW', vehicle_crashworthiness())])
 
 # the followings are for formatting results
 column_names = (
     ["problem", "iteration", "reference_point"]
     + [algorithm + "_R_HV" for algorithm in dict_algorithms.keys()]
 )
-excess_columns = [
-    "_R_HV",
-]
+
 
 data = pd.DataFrame(columns=column_names)
 data_row = pd.DataFrame(columns=column_names, index=[1])
@@ -59,8 +61,10 @@ for problem_name in dict_problems.keys():
     true_nadir = np.asarray([1] * n_obj)
 
     # interactive
-    ini_pop = initialize_pbea(problem,30,100)
-    rvea = RVEA(problem=problem, interact=True, n_gen_per_iter=gen)
+    ini_pop = initialize_pbea(problem,10,10)
+
+    archiver_rvea = archiver("RVEA", problem_name)
+    rvea = RVEA(problem=problem, interact=True, n_gen_per_iter=gen, archiver=archiver_rvea)
     pbea = PBEA(problem=problem, interact=True, n_gen_per_iter=gen, population_size=population_size,initial_population=ini_pop)
 
     rvea.set_interaction_type("Reference point")
@@ -79,8 +83,8 @@ for problem_name in dict_problems.keys():
 
 
 
-    _, pref_rvea = rvea.iterate(pref_rvea)
-    _, pref_pbea = pbea.iterate(pref_pbea)
+    pref_rvea, _ = rvea.iterate(pref_rvea)
+    pref_pbea, _ = pbea.iterate(pref_pbea)
 
     # build initial composite front
     cf = generate_composite_front(
@@ -99,21 +103,23 @@ for problem_name in dict_problems.keys():
         ]
         print ("Learning phase ", i)
         # After this class call, solutions inside the composite front are assigned to reference vectors
-        base = baseADM(cf, reference_vectors)
+        base = baseADM(cf, reference_vectors, problem)
         # generates the next reference point for the next iteration in the learning phase
         response = gp.generateRP4learning(base)
 
         data_row["reference_point"] = [
             response,
         ]
-        rvea.set_interaction_type("Reference point")
+        #rvea.set_interaction_type("Reference point")
+
+        #print(pref_rvea.content['message'])
 
         # run algorithms with the new reference point
         pref_rvea.response = pd.DataFrame([response], columns=problem.objective_names)
         #pref_rvea.response = pd.DataFrame([response], columns=pref_rvea.content['dimensions_data'].columns)
         pref_pbea.response = pd.DataFrame([response], columns=pref_pbea.content['dimensions_data'].columns)
-        _, pref_rvea = rvea.iterate(pref_rvea)
-        _, pref_pbea = pbea.iterate(pref_pbea)
+        pref_rvea, _ = rvea.iterate(pref_rvea)
+        pref_pbea, _ = pbea.iterate(pref_pbea)
 
         # extend composite front with newly obtained solutions
         cf = generate_composite_front(
@@ -137,14 +143,14 @@ for problem_name in dict_problems.keys():
         norm_pbea = pbea_transformer.transform(pbea.population.objectives)
 
         # R-metric calls for R_IGD and R_HV
-        _, rhv_rvea = rmetric.calc(norm_rvea, others=norm_pbea)
-        _, rhv_pbea = rmetric.calc(norm_pbea, others=norm_rvea)
+        rhv_rvea = rmetric.calc(norm_rvea, others=norm_pbea)
+        rhv_pbea = rmetric.calc(norm_pbea, others=norm_rvea)
 
-        data_row[["RVEA" + excess_col for excess_col in excess_columns]] = [
-            rhv_irvea,
+        data_row["RVEA_R_HV"] = [
+            rhv_rvea,
         ]
-        data_row[["PBEA" + excess_col for excess_col in excess_columns]] = [
-            rhv_insga,
+        data_row["PBEA_R_HV"] = [
+            rhv_pbea,
         ]
 
         data = data.append(data_row, ignore_index=1)
@@ -160,7 +166,7 @@ for problem_name in dict_problems.keys():
         ]
         print ("Decision phase ", i)
         # since composite front grows after each iteration this call should be done for each iteration
-        base = baseADM(cf, reference_vectors)
+        base = baseADM(cf, reference_vectors, problem)
 
         # generates the next reference point for the decision phase
         response = gp.generateRP4decision(base, max_assigned_vector[0])
@@ -174,8 +180,8 @@ for problem_name in dict_problems.keys():
         #pref_rvea.response = pd.DataFrame([response], columns=pref_rvea.content['dimensions_data'].columns)
         pref_pbea.response = pd.DataFrame([response], columns=pref_pbea.content['dimensions_data'].columns)
 
-        _, pref_rvea = rvea.iterate(pref_rvea)
-        _, pref_pbea = pbea.iterate(pref_pbea)
+        pref_rvea, _ = rvea.iterate(pref_rvea)
+        pref_pbea, _ = pbea.iterate(pref_pbea)
 
         # extend composite front with newly obtained solutions
         cf = generate_composite_front(
@@ -188,6 +194,8 @@ for problem_name in dict_problems.keys():
         rp_transformer = Normalizer().fit(ref_point)
         norm_rp = rp_transformer.transform(ref_point)
 
+
+   
         # for decision phase, delta is specified as 0.2
         rmetric = rm.RMetric(problem, norm_rp, delta=0.2)
 
@@ -198,14 +206,14 @@ for problem_name in dict_problems.keys():
         pbea_transformer = Normalizer().fit(pbea.population.objectives)
         norm_pbea = pbea_transformer.transform(pbea.population.objectives)
 
-        _, rhv_irvea = rmetric.calc(norm_rvea, others=norm_pbea)
-        _, rhv_insga = rmetric.calc(norm_pbea, others=norm_rvea)
+        rhv_rvea = rmetric.calc(norm_rvea, others=norm_pbea)
+        rhv_pbea = rmetric.calc(norm_pbea, others=norm_rvea)
 
-        data_row[["iRVEA" + excess_col for excess_col in excess_columns]] = [
-            rhv_irvea,
+        data_row["RVEA_R_HV"] = [
+            rhv_rvea,
         ]
-        data_row[["iNSGAIII" + excess_col for excess_col in excess_columns]] = [
-            rhv_insga,
+        data_row["PBEA_R_HV"] = [
+            rhv_pbea,
         ]
 
         data = data.append(data_row, ignore_index=1)

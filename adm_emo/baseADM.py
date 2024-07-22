@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 from pymoo.util.nds.non_dominated_sorting import find_non_dominated
+from desdeo_problem.problem.Problem import MOProblem, ProblemBase
 
 
 def visualize_2D_front_rvs(front, vectors: ReferenceVectors):
@@ -141,12 +142,16 @@ def assign_vectors(front, vectors):
 
 class baseADM:
     def __init__(
-        self, composite_front, vectors: ReferenceVectors,
+        self, composite_front, vectors: ReferenceVectors, problem:MOProblem
     ):
 
         self.composite_front = composite_front
         self.vectors = vectors
-        self.ideal_point = composite_front.min(axis=0)
+        self.minimize = problem._max_multiplier
+        #print (self.minimize)
+        aux_composite = composite_front * self.minimize
+        self.ideal_point = aux_composite.min(axis=0)  * self.minimize
+        #print(self.ideal_point)
         self.translated_front = translate_front(self.composite_front, self.ideal_point)
         self.normalized_front = normalize_front(
             self.composite_front, self.translated_front
