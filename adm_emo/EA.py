@@ -36,7 +36,7 @@ def archiver(alg_name: str, prob_name:str):
         """
         # These could be function arguments
         conn = sqlite3.connect('database.db') 
-        print(n_gen,"-",np.shape(obj))
+        #print(n_gen,"-",np.shape(obj))
         add_objective_values(conn, obj, alg_name, n_gen)
 
 
@@ -44,6 +44,23 @@ def archiver(alg_name: str, prob_name:str):
 
 
 class NSGAIII_archive(NSGAIII):
+    def __init__(self, *args, archiver, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.archiver = archiver
+        self.archiver(
+            self.population.objectives,
+            self._current_gen_count,
+        )
+
+    def _next_gen(self):
+        super()._next_gen()
+        self.archiver(
+            self.population.objectives,
+            self._current_gen_count,
+        )
+
+
+class PBEA_archive(PBEA):
     def __init__(self, *args, archiver, **kwargs):
         super().__init__(*args, **kwargs)
         self.archiver = archiver

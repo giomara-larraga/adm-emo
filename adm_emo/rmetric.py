@@ -15,7 +15,9 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from pymoo.core.indicator import Indicator
-from pygmo import hypervolume
+from pymoo.indicators.hv import Hypervolume
+from pymoo.indicators.igd import IGD
+
 
 class RMetric(Indicator):
     def __init__(self, problem, ref_points, w=None, delta=0.3, pf=None):
@@ -161,6 +163,8 @@ class RMetric(Indicator):
         # 1. Prescreen Procedure - NDS Filtering
         pop = self._filter()
 
+        pf = self.pf
+
         labels = np.argmin(cdist(pop, self.ref_points), axis=1)
 
         for i in range(len(self.ref_points)):
@@ -178,13 +182,34 @@ class RMetric(Indicator):
                 )
                 translated.extend(pop_t)
 
-        rhv = None
-        if len(translated) > 0:
+            # 5. R-Metric Computation
+            #target = self._preprocess(
+            #    data=pf, ref_point=self.ref_points[i], w_point=self.w_points[i]
+            #)
+            #PF = self._trim(pf, target)
+            #final_PF.extend(PF)
+
+        translated = np.array(translated)
+        final_PF = np.array(final_PF)
+
+        rigd, rhv = None, None
+
+        if (len(translated) > 0) and (pf != None):
+
+            # IGD Computation
+            rigd = IGD(final_PF).calc(translated)
+
             nadir_point = np.amax(self.w_points, axis=0)
             front = translated
+            dim = self.ref_points[0].shape[0]
+            if calc_hv:
+                if dim <= 3:
+                    try:
+                        rhv = Hypervolume(ref_point=nadir_point).calc(front)
+                    except:
+                        pass
 
-            hv = hypervolume(front)
-            rhv = hv.compute(nadir_point)
-
-        return rhv
-       
+        if calc_hv:
+            return rigd, rhv
+        else:
+            return rigd

@@ -10,16 +10,18 @@ from RiverPollutionProblem import river_pollution_problem
 from CarSideImpact import car_side_impact
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
-#from desdeo_emo.EAs.NSGAIII import NSGAIII as RVEA
+from desdeo_emo.EAs.NSGAIII import NSGAIII as RVEA
 from desdeo_emo.EAs.PBEA import PBEA
 from desdeo_emo.EAs.IBEA import IBEA
 
-from EA import NSGAIII_archive as RVEA
+#from EA import NSGAIII_archive as RVEA
+#from EA import PBEA_archive as PBEA
 from EA import archiver
 
 from pymoo.util.ref_dirs import get_reference_directions
 import rmetric as rm
 from sklearn.preprocessing import Normalizer
+
 
 def initialize_pbea(problem, population_size, gens):
     ib = IBEA(problem, population_size=population_size, n_iterations=10, n_gen_per_iter=gens)
@@ -63,8 +65,9 @@ for problem_name in dict_problems.keys():
     # interactive
     ini_pop = initialize_pbea(problem,10,10)
 
-    archiver_rvea = archiver("RVEA", problem_name)
-    rvea = RVEA(problem=problem, interact=True, n_gen_per_iter=gen, archiver=archiver_rvea)
+    #archiver_rvea = archiver("RVEA", problem_name)
+    #archiver_pbea = archiver("PBEA", problem_name)
+    rvea = RVEA(problem=problem, interact=True, n_gen_per_iter=gen)
     pbea = PBEA(problem=problem, interact=True, n_gen_per_iter=gen, population_size=population_size,initial_population=ini_pop)
 
     rvea.set_interaction_type("Reference point")
@@ -74,8 +77,11 @@ for problem_name in dict_problems.keys():
     pref_pbea, plot_pbea = pbea.requests()
 
     # initial reference point is specified randomly
-    response = np.random.rand(n_obj)
-    response = problem.ideal
+    #response = np.random.rand(n_obj)
+    values = np.random.uniform(problem.ideal, problem.nadir, (1, problem.ideal.shape[0]))
+
+    response = values[0]
+    print("initial_reference_point",response)
 
     pref_rvea.response = pd.DataFrame([response], columns=problem.objective_names)
     #pref_rvea.response = pd.DataFrame([response], columns=pref_rvea.content['dimensions_data'].columns)
@@ -106,6 +112,8 @@ for problem_name in dict_problems.keys():
         base = baseADM(cf, reference_vectors, problem)
         # generates the next reference point for the next iteration in the learning phase
         response = gp.generateRP4learning(base)
+
+        print("learning_reference_point",response)
 
         data_row["reference_point"] = [
             response,
@@ -170,6 +178,8 @@ for problem_name in dict_problems.keys():
 
         # generates the next reference point for the decision phase
         response = gp.generateRP4decision(base, max_assigned_vector[0])
+
+        print("decision_reference_point",response)
 
         data_row["reference_point"] = [
             response,

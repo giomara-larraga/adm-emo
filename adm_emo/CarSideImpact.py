@@ -32,8 +32,8 @@ from desdeo_problem import ScalarConstraint, problem
 import numpy as np
 
 multipliers = [1,1,1,1]
-ideal = [15.57601198, 3.58525, 10.61113855, 0.20709839]
-nadir = [41.48173027, 4.42725, 12.79789413, 36.56265512]
+approx_ideal = [15.57601198, 3.58525, 10.61113855, 0.20709839]
+approx_nadir = [41.48173027, 4.42725, 12.79789413, 36.56265512]
 
 def car_side_impact(three_obj: bool = False, var_iv: np.array = np.array([1, 0.9, 1, 1, 1.75, 0.8, 0.8])) -> MOProblem:
     """ Car-side impact problem.
@@ -244,6 +244,6 @@ def car_side_impact(three_obj: bool = False, var_iv: np.array = np.array([1, 0.9
 
     variables = [x_1, x_2, x_3, x_4, x_5, x_6, x_7]
 
-    problem = MOProblem(variables=variables, objectives=objectives, constraints=constraints)
+    problem = MOProblem(variables=variables, objectives=objectives, constraints=constraints,ideal=approx_ideal, nadir=approx_nadir)
 
     return problem

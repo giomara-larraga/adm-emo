@@ -64,6 +64,6 @@ def river_pollution_problem(five_obj: bool = True, var_iv: np.array = np.array([
 
     variables = [x_1, x_2]
     
-    problem = MOProblem(variables=variables, objectives=objectives)
+    problem = MOProblem(variables=variables, objectives=objectives, ideal=ideal, nadir=nadir)
 
     return problem
