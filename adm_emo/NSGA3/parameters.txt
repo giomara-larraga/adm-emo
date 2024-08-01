@@ -26,8 +26,9 @@
 ##    condition is satisfied, FALSE otherwise.
 
 # 1:            2:                   3: 4:      5:
-crossoverProbability "--crossoverProbability " r (0.0, 1.0) | crossover %in% c("SBX","BLX_ALPHA")
-sbxCrossoverDistributionIndex "--sbxCrossoverDistributionIndex " r (5.0, 400.0) | crossover %in% c("SBX")
+generations "--generations " c (100,200,300,400,500)
+crossoverProbability "--crossoverProbability " r (0.0, 1.0) 
+sbxCrossoverDistributionIndex "--sbxCrossoverDistributionIndex " r (5.0, 400.0) 
 #
-mutationProbability "--mutationProbability " r (0.0, 1.0) | mutation %in% c("polynomial","uniform")
-polynomialMutationDistributionIndex "--polynomialMutationDistributionIndex " r (5.0, 400.0) | mutation %in% c("polynomial")
+mutationProbability "--mutationProbability " r (0.0, 1.0) 
+polynomialMutationDistributionIndex "--polynomialMutationDistributionIndex " r (5.0, 400.0) 

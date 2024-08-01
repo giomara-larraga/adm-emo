@@ -34,11 +34,11 @@ CONFIG_PARAMS=$*
 # BINDIR=$(dirname "$(readlink -f "$(type -P $0 || echo $0)")")
 
 # EDIT THIS: Path to your executable
-EXE=~/EMO2025/adm-emo/adm-emo/NSGAIII_learning_phase.py
+EXE=~/Projects/EMO2025/adm-emo/adm_emo/NSGAIII_learning_phase.py
 # EDIT THIS: Specify how parameters are given to your executable
 EXE_PARAMS="--seed ${SEED} ${INSTANCE} ${CONFIG_PARAMS}"
 
-#echo ${EXE_PARAMS}
+echo ${EXE_PARAMS}
 if [ ! -x "$(command -v ${EXE})" ]; then
     error "${EXE}: not found or not executable (pwd: $(pwd))"
 fi

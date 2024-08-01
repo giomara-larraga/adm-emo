@@ -1,4 +1,6 @@
-from DBConnection import get_reference_points, get_solutions_by_gen
+#!/usr/bin/python
+
+from DBConnection import get_reference_points
 from EA import NSGAIII_archive as NSGAIII
 from VehicleCrashWorthiness import vehicle_crashworthiness
 from RiverPollutionProblem import river_pollution_problem
@@ -12,7 +14,6 @@ import logging
 import sys
 
 from scipy.stats import ranksums
-from desdeo_emo.EAs.AutoNSGAIII import AutoNSGAIII
 
 
 dict_problems = dict([('VCW', vehicle_crashworthiness()), ('CSI', car_side_impact()), ('RPP', river_pollution_problem())])
@@ -28,7 +29,7 @@ def main(SEED, PROB, GENS, CROS, CROS_PROB, CROS_REP, CROS_DIST, CROS_ALPHA, MUT
     #evolver_nsga3 = NSGAIII(problem, problem_name=problem_name, phase="L", interact=True, n_gen_per_iter=gens_iter)
     problem = dict_problems[PROB]
 
-    evolver_nsga3 = AutoNSGAIII(
+    evolver_nsga3 = NSGAIII(
         problem, 
         problem_name=PROB,
         phase="L", 
@@ -58,6 +59,7 @@ def main(SEED, PROB, GENS, CROS, CROS_PROB, CROS_REP, CROS_DIST, CROS_ALPHA, MUT
         pref_nsga3.response = pd.DataFrame([reference_point], columns=problem.objective_names)
         pref_nsga3, _ = evolver_nsga3.iterate(pref_nsga3)
 
+    print(evolver_nsga3.phi_learning_values)
     print(np.sum(evolver_nsga3.phi_learning_values))
     
     #Delete rows sql
@@ -101,5 +103,6 @@ if __name__ == "__main__":
     logging.debug(args)
     #np.random.seed(args.seed)
     # call main function passing args
-    main(args.seed, args.prob, args.id, args.obj, args.var, args.gens, args.cros,args.cros_prob, args.cros_rep, args.cros_dist, args.cros_alpha, args.mut, args.mut_prob, args.mut_repair, args.mut_pmd, args.mut_ump, args.sel, args.sel_size)
+    main(args.seed, args.prob, args.gens, args.cros,args.cros_prob, args.cros_rep, args.cros_dist, args.cros_alpha, args.mut, args.mut_prob, args.mut_repair, args.mut_pmd, args.mut_ump, args.sel, args.sel_size)
+
 

@@ -1,15 +1,16 @@
 import numpy as np
 import sqlite3
 
-def init_db():
-    conn = sqlite3.connect('database.db') 
-    return conn
+db_path = '/home/giomara/Projects/EMO2025/database.db'
 
+def init_db():
+    conn = sqlite3.connect(db_path) 
+    return conn
 
 def add_objective_values(iteration, phase, problem_name, alg_name, solution, gen):
     if problem_name == "VCW":
         try:
-            with sqlite3.connect('database.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 sql = ''' INSERT INTO Problem(iteration,phase,problem,method,f1,f2,f3,gen)
                 VALUES(?,?,?,?,?,?,?,?) '''
                 for i in range(len(solution)):
@@ -23,7 +24,7 @@ def add_objective_values(iteration, phase, problem_name, alg_name, solution, gen
 
     elif problem_name == "CSI":
         try:
-            with sqlite3.connect('database.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 sql = ''' INSERT INTO Problem(iteration,phase,problem,method,f1,f2,f3,f4,gen)
                 VALUES(?,?,?,?,?,?,?,?,?) '''
                 cur = conn.cursor()
@@ -35,7 +36,7 @@ def add_objective_values(iteration, phase, problem_name, alg_name, solution, gen
             return None
     elif problem_name == "RPP":
         try:
-            with sqlite3.connect('database.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 sql = ''' INSERT INTO Problem(iteration,phase,problem,method,f1,f2,f3,f4,f5,gen)
                 VALUES(?,?,?,?,?,?,?,?,?,?) '''
                 cur = conn.cursor()
@@ -51,7 +52,7 @@ def add_objective_values(iteration, phase, problem_name, alg_name, solution, gen
 def get_reference_points(problem_name, phase):
     if problem_name == "VCW":
         try:
-            with sqlite3.connect('database.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
                 cur.execute('select f1, f2, f3 from ReferencePoints where problem=? and phase =? order by id', (problem_name,phase))
                 reference_points = cur.fetchall()
@@ -62,7 +63,7 @@ def get_reference_points(problem_name, phase):
 
     elif problem_name == "CSI":
         try:
-            with sqlite3.connect('database.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
                 cur.execute('select f1, f2, f3, f4 from ReferencePoints where problem=? and phase =? order by id', (problem_name,phase))
                 reference_points = cur.fetchall()
@@ -72,7 +73,7 @@ def get_reference_points(problem_name, phase):
             return None
     elif problem_name == "RPP":
         try:
-            with sqlite3.connect('database.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
                 cur.execute('select f1, f2, f3, f4, f5 from ReferencePoints where problem=? and phase =? order by id', (problem_name,phase))
                 reference_points = cur.fetchall()
@@ -87,7 +88,7 @@ def get_reference_points(problem_name, phase):
 def get_solutions_by_gen(iteration, n_gen, problem_name, alg_name):
     if problem_name == "VCW":
         try:
-            with sqlite3.connect('database.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
                 cur.execute('select f1, f2, f3 from Problem where iteration=? and problem=? and method =? and gen=? order by id', (iteration,problem_name,alg_name,n_gen))
                 reference_points = cur.fetchall()
@@ -98,7 +99,7 @@ def get_solutions_by_gen(iteration, n_gen, problem_name, alg_name):
 
     elif problem_name == "CSI":
         try:
-            with sqlite3.connect('database.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
                 cur.execute('select f1, f2, f3, f4 from Problem where iteration=? and problem=? and method =? and gen=? order by id', (iteration,problem_name,alg_name,n_gen))
                 reference_points = cur.fetchall()
@@ -108,7 +109,7 @@ def get_solutions_by_gen(iteration, n_gen, problem_name, alg_name):
             return None
     elif problem_name == "RPP":
         try:
-            with sqlite3.connect('database.db') as conn:
+            with sqlite3.connect(db_path) as conn:
                 cur = conn.cursor()
                 cur.execute('select f1, f2, f3, f4, f5 from Problem where iteration=? and problem=? and method =? and gen=? order by id', (iteration,problem_name,alg_name,n_gen))
                 reference_points = cur.fetchall()

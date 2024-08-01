@@ -50,3 +50,4 @@ class PBEA_archive(AutoPBEA):
         self.phi_learning_values.append(compute_metric_learning(self.phi_learning,self.population.objectives, self.reference_point,self.population.problem.nadir))
         super()._next_gen()
 
+
