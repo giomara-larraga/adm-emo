@@ -20,7 +20,24 @@ from pymoo.util.ref_dirs import get_reference_directions
 from desdeo_emo.utilities import ReferenceVectors
 import rmetric as rm
 from sklearn.preprocessing import Normalizer
+from wfg_problems import wfg_problem_builder
 
+
+def generate_dict_problems_wfg(problems, objectives):
+    # variables = m + k-1
+    generated_dict_problems = dict()
+
+    for problem in problems:
+        for n_obj in objectives:
+            variables = 10 + n_obj -1
+            ideal = np.zeros(n_obj)
+            nadir = np.ones(n_obj)
+
+            problem_form = wfg_problem_builder(problem, variables, n_obj)
+            dict_data = {"problem":  problem_form, "ideal": ideal, "nadir": nadir}
+            generated_dict_problems[problem+str(n_obj)] = dict_data
+
+    return generated_dict_problems
 
 def generate_dict_problems_dtlz(problems, objectives):
     # variables = m + k-1
@@ -44,7 +61,7 @@ def generate_dict_problems_dtlz(problems, objectives):
     return generated_dict_problems
 
 def initialize_pbea(problem, population_size, gens):
-    ib = IBEA(problem, population_size=population_size, n_iterations=10, n_gen_per_iter=gens)
+    ib = IBEA(problem, population_size=population_size, n_iterations=1, n_gen_per_iter=gens)
     while ib.continue_evolution():
         ib.iterate()
     individuals, objective_values = ib.end()
@@ -54,9 +71,10 @@ def initialize_pbea(problem, population_size, gens):
 #dict_problems = dict([('VCW', vehicle_crashworthiness()), ('CSI', car_side_impact()), ('RPP', river_pollution_problem())])
 dict_algorithms = dict([('RVEA', RVEA), ('PBEA', PBEA)])
 problem_names = ["DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4", "DTLZ5", "DTLZ6", "DTLZ7"]
+problem_names_wfg = ["WFG1", "WFG2", "WFG3", "WFG4", "WFG5", "WFG6", "WFG7", "WFG8", "WFG9"]
 objectives = [3,5,7]
-dict_problems = generate_dict_problems_dtlz(problem_names, objectives)
-
+#dict_problems = generate_dict_problems_dtlz(problem_names, objectives)
+dict_problems = generate_dict_problems_wfg(problem_names_wfg, objectives)
 # the followings are for formatting results
 column_names = (
     ["problem", "iteration", "reference_point"]
@@ -73,7 +91,7 @@ D = 3  # number of iterations for the decision phase
 lattice_resolution = 5  # density variable for creating reference vectors
 
 population_size = 200
-gen = 500
+gen = 900
 
 print(dict_problems)
 
@@ -88,7 +106,7 @@ for problem_name in dict_problems.keys():
     #true_nadir = data_problem["nadir"]
 
     # interactive
-    ini_pop = initialize_pbea(problem,10,10)
+    ini_pop = initialize_pbea(problem,100,600)
 
     #archiver_rvea = archiver("RVEA", problem_name)
     #archiver_pbea = archiver("PBEA", problem_name)
