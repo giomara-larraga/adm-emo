@@ -4,10 +4,8 @@ import pandas as pd
 import baseADM
 from baseADM import *
 import generatePreference as gp
+from desdeo_problem import test_problem_builder
 
-from VehicleCrashWorthiness import vehicle_crashworthiness
-from RiverPollutionProblem import river_pollution_problem
-from CarSideImpact import car_side_impact
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 
 from desdeo_emo.EAs.NSGAIII import NSGAIII as RVEA
@@ -16,12 +14,34 @@ from desdeo_emo.EAs.IBEA import IBEA
 
 #from EA import NSGAIII_archive as RVEA
 #from EA import PBEA_archive as PBEA
-from EA import archiver
+#from EA import archiver
 
 from pymoo.util.ref_dirs import get_reference_directions
+from desdeo_emo.utilities import ReferenceVectors
 import rmetric as rm
 from sklearn.preprocessing import Normalizer
 
+
+def generate_dict_problems_dtlz(problems, objectives):
+    # variables = m + k-1
+    generated_dict_problems = dict()
+
+    for problem in problems:
+        for n_obj in objectives:
+            if problem == "DTLZ1":
+                variables = 5 + n_obj -1
+                ideal = np.zeros(n_obj) 
+                nadir = np.ones(n_obj) * 0.5
+            else:
+                variables = 10 + n_obj -1
+                ideal = np.zeros(n_obj)
+                nadir = np.ones(n_obj)
+
+            problem_form = test_problem_builder(problem, variables, n_obj)
+            dict_data = {"problem":  problem_form, "ideal": ideal, "nadir": nadir}
+            generated_dict_problems[problem+str(n_obj)] = dict_data
+
+    return generated_dict_problems
 
 def initialize_pbea(problem, population_size, gens):
     ib = IBEA(problem, population_size=population_size, n_iterations=10, n_gen_per_iter=gens)
@@ -33,7 +53,9 @@ def initialize_pbea(problem, population_size, gens):
 
 #dict_problems = dict([('VCW', vehicle_crashworthiness()), ('CSI', car_side_impact()), ('RPP', river_pollution_problem())])
 dict_algorithms = dict([('RVEA', RVEA), ('PBEA', PBEA)])
-dict_problems = dict([('VCW', vehicle_crashworthiness())])
+problem_names = ["DTLZ1", "DTLZ2", "DTLZ3", "DTLZ4", "DTLZ5", "DTLZ6", "DTLZ7"]
+objectives = [3,5,7]
+dict_problems = generate_dict_problems_dtlz(problem_names, objectives)
 
 # the followings are for formatting results
 column_names = (
@@ -53,14 +75,17 @@ lattice_resolution = 5  # density variable for creating reference vectors
 population_size = 200
 gen = 500
 
+print(dict_problems)
+
 for problem_name in dict_problems.keys():
     print("Running for problem", problem_name)
-    problem = dict_problems[problem_name]
+    data_problem = dict_problems[problem_name]
+    problem = data_problem["problem"]
     n_obj = problem.n_of_objectives
-    ideal = np.asarray([0] * n_obj)
-    nadir = abs(np.random.normal(size=n_obj, scale=0.15)) + 1
+    ideal = data_problem["ideal"]
+    nadir = data_problem["nadir"]
 
-    true_nadir = np.asarray([1] * n_obj)
+    #true_nadir = data_problem["nadir"]
 
     # interactive
     ini_pop = initialize_pbea(problem,10,10)
@@ -78,7 +103,7 @@ for problem_name in dict_problems.keys():
 
     # initial reference point is specified randomly
     #response = np.random.rand(n_obj)
-    values = np.random.uniform(problem.ideal, problem.nadir, (1, problem.ideal.shape[0]))
+    values = np.random.uniform(ideal, nadir, (1, n_obj))
 
     response = values[0]
     print("initial_reference_point",response)
@@ -99,7 +124,7 @@ for problem_name in dict_problems.keys():
 
     # creates uniformly distributed reference vectors
     #reference_vectors = get_reference_directions(lattice_resolution, n_obj)
-    reference_vectors = get_reference_directions("uniform", n_obj,n_partitions=12)
+    reference_vectors = ReferenceVectors(lattice_resolution=12, number_of_objectives=n_obj)
 
     # learning phase
     for i in range(L):
@@ -109,7 +134,7 @@ for problem_name in dict_problems.keys():
         ]
         print ("Learning phase ", i)
         # After this class call, solutions inside the composite front are assigned to reference vectors
-        base = baseADM(cf, reference_vectors, problem)
+        base = baseADM(cf, reference_vectors)
         # generates the next reference point for the next iteration in the learning phase
         response = gp.generateRP4learning(base)
 
@@ -174,7 +199,7 @@ for problem_name in dict_problems.keys():
         ]
         print ("Decision phase ", i)
         # since composite front grows after each iteration this call should be done for each iteration
-        base = baseADM(cf, reference_vectors, problem)
+        base = baseADM(cf, reference_vectors)
 
         # generates the next reference point for the decision phase
         response = gp.generateRP4decision(base, max_assigned_vector[0])

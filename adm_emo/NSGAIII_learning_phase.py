@@ -2,9 +2,6 @@
 
 from DBConnection import get_reference_points
 from EA import NSGAIII_archive as NSGAIII
-from VehicleCrashWorthiness import vehicle_crashworthiness
-from RiverPollutionProblem import river_pollution_problem
-from CarSideImpact import car_side_impact
 import pandas as pd
 import numpy as np
 from phi import phi
@@ -62,10 +59,6 @@ def main(SEED, PROB, GENS, CROS, CROS_PROB, CROS_REP, CROS_DIST, CROS_ALPHA, MUT
     print(evolver_nsga3.phi_learning_values)
     print(np.sum(evolver_nsga3.phi_learning_values))
     
-    #Delete rows sql
-    #delete from problem;
-    #UPDATE SQLITE_SEQUENCE SET SEQ=0 WHERE NAME='Problem';
-
 
 if __name__ == "__main__":
     # just check if args are ok
