@@ -106,7 +106,7 @@ for problem_name in dict_problems.keys():
     #true_nadir = data_problem["nadir"]
 
     # interactive
-    ini_pop = initialize_pbea(problem,100,600)
+    ini_pop = initialize_pbea(problem,50,100)
 
     #archiver_rvea = archiver("RVEA", problem_name)
     #archiver_pbea = archiver("PBEA", problem_name)

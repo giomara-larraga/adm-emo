@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 from pymoo.util.nds.non_dominated_sorting import find_non_dominated
 from desdeo_problem.problem.Problem import MOProblem, ProblemBase
-from pygmo import fast_non_dominated_sorting as nds
+from pymoo.util.nds import fast_non_dominated_sort as nds 
 
 def generate_composite_front(*fronts):
 
