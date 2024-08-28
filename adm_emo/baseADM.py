@@ -1,104 +1,11 @@
+
 import numpy as np
 import plotly.graph_objects as go
 
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
-from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
-
-
-def visualize_2D_front_rvs(front, vectors: ReferenceVectors):
-    fig = go.Figure(
-        data=go.Scatter(
-            x=front[:, 0],
-            y=front[:, 1],
-            name="Composite front",
-            mode="markers",
-            marker_size=3,
-        )
-    )
-
-    for i in range(0, vectors.number_of_vectors):
-        fig.add_trace(
-            go.Scatter(
-                x=[0, vectors.values[i, 0], vectors.values[i, 0]],
-                y=[0, vectors.values[i, 1], vectors.values[i, 1]],
-                name="vector #" + str(i + 1),
-                marker=dict(size=1, opacity=0.8),
-                line=dict(width=2),
-            )
-        )
-    return fig
-
-
-def visualize_3D_front_rvs(front, vectors: ReferenceVectors):
-
-    fig = go.Figure(
-        data=go.Scatter3d(
-            x=front[:, 0],
-            y=front[:, 1],
-            z=front[:, 2],
-            name="Composite front",
-            mode="markers",
-            marker_size=3,
-        )
-    )
-
-    for i in range(0, vectors.number_of_vectors):
-        fig.add_trace(
-            go.Scatter3d(
-                x=[0, vectors.values[i, 0], vectors.values[i, 0]],
-                y=[0, vectors.values[i, 1], vectors.values[i, 1]],
-                z=[0, vectors.values[i, 2], vectors.values[i, 2]],
-                name="vector #" + str(i + 1),
-                marker=dict(size=1, opacity=0.8),
-                line=dict(width=2),
-            )
-        )
-    return fig
-
-
-def visualize_2D_front_rp(front, rp):
-    fig = go.Figure(
-        data=go.Scatter(
-            x=front[:, 0],
-            y=front[:, 1],
-            name="Composite front",
-            mode="markers",
-            marker_size=3,
-        )
-    )
-
-    fig.add_trace(
-        go.Scatter(
-            x=[rp[0]], y=[rp[1]], name="Reference point", mode="markers", marker_size=5,
-        )
-    )
-    return fig
-
-
-def visualize_3D_front_rp(front, rp):
-    fig = go.Figure(
-        data=go.Scatter3d(
-            x=front[:, 0],
-            y=front[:, 1],
-            z=front[:, 2],
-            name="Composite front",
-            mode="markers",
-            marker_size=3,
-        )
-    )
-
-    fig.add_trace(
-        go.Scatter3d(
-            x=[rp[0]],
-            y=[rp[1]],
-            z=[rp[2]],
-            name="Reference point",
-            mode="markers",
-            marker_size=5,
-        )
-    )
-    return fig
-
+from pymoo.util.nds.non_dominated_sorting import find_non_dominated
+from desdeo_problem.problem.Problem import MOProblem, ProblemBase
+from pygmo import fast_non_dominated_sorting as nds
 
 def generate_composite_front(*fronts):
 
@@ -107,6 +14,37 @@ def generate_composite_front(*fronts):
     cf = _fronts[nds(_fronts)[0][0]]
 
     return cf
+
+
+def generate_composite_front_with_identity(*fronts):
+    # This is currently working for two fronts
+    # First two fronts should be the individual fronts from each algorithm to be compared
+    # This function counts the number of solutions provided to the composite front by each algorithm to be compared.
+
+    first_front = np.shape(fronts[0])
+    second_front = np.shape(fronts[1])
+
+    _fronts = np.vstack(fronts)
+    # print(nds(_fronts)[0][0])
+
+    temp = nds(_fronts)[0][0]
+    first_nds = temp[temp < first_front[0] - 1]
+    second_nds = temp[temp > first_front[0] - 1]
+
+    # Following lines are needed since composite front is keeping all the solutions from the very beginning.
+    # I am finding always the newly added nondominated solutions after each iteration by each algorithm
+    remaining_fronts = (first_front[0]) + (second_front[0])
+    remaining_nds = temp[temp > remaining_fronts]
+
+    # print(remaining_nds)
+
+    first = first_nds.shape[0]
+    second = second_nds.shape[0]
+    second -= remaining_nds.shape[0]
+
+    cf = _fronts[temp]
+
+    return first, second, cf
 
 
 def translate_front(front, ideal):
@@ -132,16 +70,14 @@ def assign_vectors(front, vectors: ReferenceVectors):
     if cosine[np.where(cosine < 0)].size:
         cosine[np.where(cosine < 0)] = 0
 
-    # theta = np.arccos(cosine) #check this theta later, if needed or not
+    theta = np.arccos(cosine)  # check this theta later, if needed or not
     assigned_vectors = np.argmax(cosine, axis=1)
 
-    return assigned_vectors
+    return assigned_vectors, theta
 
 
 class baseADM:
-    def __init__(
-        self, composite_front, vectors: ReferenceVectors,
-    ):
+    def __init__(self, composite_front, vectors: ReferenceVectors):
 
         self.composite_front = composite_front
         self.vectors = vectors
@@ -150,4 +86,6 @@ class baseADM:
         self.normalized_front = normalize_front(
             self.composite_front, self.translated_front
         )
-        self.assigned_vectors = assign_vectors(self.normalized_front, self.vectors)
+        self.assigned_vectors, self.theta = assign_vectors(
+            self.normalized_front, self.vectors
+        )
