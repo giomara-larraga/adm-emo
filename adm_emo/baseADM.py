@@ -5,13 +5,13 @@ import plotly.graph_objects as go
 from desdeo_emo.utilities.ReferenceVectors import ReferenceVectors
 from pymoo.util.nds.non_dominated_sorting import find_non_dominated
 from desdeo_problem.problem.Problem import MOProblem, ProblemBase
-from pymoo.util.nds import fast_non_dominated_sort as nds 
+#from pymoo.util.nds.fast_non_dominated_sort import fast_non_dominated_sort as nds 
 
 def generate_composite_front(*fronts):
 
     _fronts = np.vstack(fronts)
 
-    cf = _fronts[nds(_fronts)[0][0]]
+    cf = _fronts[find_non_dominated(_fronts)]
 
     return cf
 
@@ -27,7 +27,7 @@ def generate_composite_front_with_identity(*fronts):
     _fronts = np.vstack(fronts)
     # print(nds(_fronts)[0][0])
 
-    temp = nds(_fronts)[0][0]
+    temp = find_non_dominated(_fronts)
     first_nds = temp[temp < first_front[0] - 1]
     second_nds = temp[temp > first_front[0] - 1]
 
@@ -63,8 +63,8 @@ def normalize_front(front, translated_front):
     return normalized_front
 
 
-def assign_vectors(front, vectors: ReferenceVectors):
-    cosine = np.dot(front, np.transpose(vectors.values))
+def assign_vectors(front, vectors):
+    cosine = np.dot(front, np.transpose(vectors))
     if cosine[np.where(cosine > 1)].size:
         cosine[np.where(cosine > 1)] = 1
     if cosine[np.where(cosine < 0)].size:
@@ -77,7 +77,7 @@ def assign_vectors(front, vectors: ReferenceVectors):
 
 
 class baseADM:
-    def __init__(self, composite_front, vectors: ReferenceVectors):
+    def __init__(self, composite_front, vectors):
 
         self.composite_front = composite_front
         self.vectors = vectors

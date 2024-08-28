@@ -18,7 +18,6 @@ from pymoo.core.indicator import Indicator
 from pymoo.indicators.hv import Hypervolume
 from pymoo.indicators.igd import IGD
 
-
 class RMetric(Indicator):
     def __init__(self, problem, ref_points, w=None, delta=0.3, pf=None):
         """
@@ -127,7 +126,7 @@ class RMetric(Indicator):
         filtered_matrix = pop[np.where(centeroid_matrix < range / 2), :][0]
         return filtered_matrix
 
-    def calc(self, F, others=None, calc_hv=True):
+    def calc(self, F, others=None, calc_hv=False):
         """
 
         This method calculates the R-IGD and R-HV based off of the values provided.
@@ -164,6 +163,13 @@ class RMetric(Indicator):
         pop = self._filter()
 
         pf = self.pf
+        if pf is None:
+            pf = self.problem.pareto_front()
+
+        if pf is None:
+            raise Exception(
+                "Please provide the Pareto front to calculate the R-Metric!"
+            )
 
         labels = np.argmin(cdist(pop, self.ref_points), axis=1)
 
@@ -183,21 +189,22 @@ class RMetric(Indicator):
                 translated.extend(pop_t)
 
             # 5. R-Metric Computation
-            #target = self._preprocess(
-            #    data=pf, ref_point=self.ref_points[i], w_point=self.w_points[i]
-            #)
-            #PF = self._trim(pf, target)
-            #final_PF.extend(PF)
+            target = self._preprocess(
+                data=pf, ref_point=self.ref_points[i], w_point=self.w_points[i]
+            )
+            PF = self._trim(pf, target)
+            final_PF.extend(PF)
 
         translated = np.array(translated)
         final_PF = np.array(final_PF)
 
         rigd, rhv = None, None
 
-        if (len(translated) > 0) and (pf != None):
+        if len(translated) > 0:
 
             # IGD Computation
-            rigd = IGD(final_PF).calc(translated)
+            ind = IGD(final_PF)
+            rigd = ind(translated)
 
             nadir_point = np.amax(self.w_points, axis=0)
             front = translated
@@ -205,11 +212,12 @@ class RMetric(Indicator):
             if calc_hv:
                 if dim <= 3:
                     try:
-                        rhv = Hypervolume(ref_point=nadir_point).calc(front)
+                        ind_hv = Hypervolume(ref_point=nadir_point)
+                        rhv = ind_hv(front)
                     except:
                         pass
 
         if calc_hv:
             return rigd, rhv
         else:
-            return rigd
+            return rigd, 0

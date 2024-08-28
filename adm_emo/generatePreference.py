@@ -38,7 +38,7 @@ def generateRP4learning(base: baseADM):
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
     # Create the reference point
-    reference_point = distance_selected[0] * base.vectors.values[min_assigned_vector[0]]
+    reference_point = distance_selected[0] * base.vectors[min_assigned_vector[0]]
     reference_point = np.squeeze(reference_point + ideal_cf)
     # reference_point = reference_point + ideal_cf
     return reference_point
@@ -78,7 +78,7 @@ def generateRP4decision(base: baseADM, max_assigned_vector):
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
     # Create the reference point
-    reference_point = distance_selected[0] * base.vectors.values[max_assigned_vector]
+    reference_point = distance_selected[0] * base.vectors[max_assigned_vector]
     reference_point = np.squeeze(reference_point + ideal_cf)
 
     # reference_point = reference_point + ideal_cf
@@ -113,7 +113,7 @@ def generatePerturbatedRP4decision(base: baseADM, max_assigned_vector):
     # aminidx = np.where(angles == np.nanmin(angles))
 
     # Create the reference point
-    reference_point = distance_selected[0] * base.vectors.values[max_assigned_vector]
+    reference_point = distance_selected[0] * base.vectors[max_assigned_vector]
 
     # Find the distance from the nearest solution to the reference point
     distance = min(np.linalg.norm(reference_point - i) for i in sub_population_fitness)
@@ -170,7 +170,7 @@ def generateRanges4learning(base: baseADM, true_ideal, true_nadir):
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
     # Create the reference point
-    reference_point = distance_selected[0] * base.vectors.values[min_assigned_vector[0]]
+    reference_point = distance_selected[0] * base.vectors[min_assigned_vector[0]]
 
     # Distance between the reference point and the nearest solution
     distance = min(np.linalg.norm(reference_point - i) for i in sub_population_fitness)
@@ -225,7 +225,7 @@ def generateRanges4decision(base: baseADM, max_assigned_vector, true_ideal, true
     distance_selected = sub_pop_fitness_magnitude[minidx]
 
     # Create the reference point
-    reference_point = distance_selected[0] * base.vectors.values[max_assigned_vector]
+    reference_point = distance_selected[0] * base.vectors[max_assigned_vector]
 
     # Distance between the reference point and the nearest solution
     distance = min(np.linalg.norm(reference_point - i) for i in sub_population_fitness)
