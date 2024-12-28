@@ -1,0 +1,8 @@
+------------------------------
+r-env 4.4.0
+https://docs.csc.fi/apps/r-env
+------------------------------
+Error: unexpected end of input
+Execution halted
+srun: error: r07c04: task 0: Exited with exit code 1
+srun: Terminating StepId=25508353.0

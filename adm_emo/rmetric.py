@@ -126,7 +126,7 @@ class RMetric(Indicator):
         filtered_matrix = pop[np.where(centeroid_matrix < range / 2), :][0]
         return filtered_matrix
 
-    def calc(self, F, others=None, calc_hv=False):
+    def calc(self, F, others=None, calc_hv=True):
         """
 
         This method calculates the R-IGD and R-HV based off of the values provided.
@@ -163,13 +163,13 @@ class RMetric(Indicator):
         pop = self._filter()
 
         pf = self.pf
-        if pf is None:
-            pf = self.problem.pareto_front()
+        #if pf is None:
+        #    pf = self.problem.pareto_front()
 
-        if pf is None:
-            raise Exception(
-                "Please provide the Pareto front to calculate the R-Metric!"
-            )
+        #if pf is None:
+        #    raise Exception(
+        #        "Please provide the Pareto front to calculate the R-Metric!"
+        #    )
 
         labels = np.argmin(cdist(pop, self.ref_points), axis=1)
 
@@ -189,18 +189,19 @@ class RMetric(Indicator):
                 translated.extend(pop_t)
 
             # 5. R-Metric Computation
-            target = self._preprocess(
-                data=pf, ref_point=self.ref_points[i], w_point=self.w_points[i]
-            )
-            PF = self._trim(pf, target)
-            final_PF.extend(PF)
+            if pf != None:
+                target = self._preprocess(
+                    data=pf, ref_point=self.ref_points[i], w_point=self.w_points[i]
+                )
+                PF = self._trim(pf, target)
+                final_PF.extend(PF)
 
         translated = np.array(translated)
         final_PF = np.array(final_PF)
 
         rigd, rhv = None, None
 
-        if len(translated) > 0:
+        if (len(translated) > 0) and (pf!=None):
 
             # IGD Computation
             ind = IGD(final_PF)
@@ -217,7 +218,9 @@ class RMetric(Indicator):
                     except:
                         pass
 
-        if calc_hv:
+        if calc_hv and pf!=None:
             return rigd, rhv
-        else:
-            return rigd, 0
+        elif calc_hv and pf==None:
+            return 0, rhv
+        elif calc_hv == False:
+            return rigd, 0 

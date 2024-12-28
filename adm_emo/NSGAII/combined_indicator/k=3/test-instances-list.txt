@@ -1,0 +1,18 @@
+## This is an example of specifying a list of instances.
+
+# Each line is an instance relative to trainInstancesDir/testInstancesdir
+# unless set to "" (see scenario.txt.tmpl) and an optional sequence of
+# instance-specific parameters that will be passed to target-runner when
+# invoked on that instance.
+
+# Empty lines and comments are ignored.
+#non-dominated point
+#3 objectives
+--prob DTLZ1 --obj 3 --generations 400 --epsilonValue 0.001
+--prob DTLZ2 --obj 3 --generations 400 --epsilonValue 0.001
+--prob DTLZ3 --obj 3 --generations 400 --epsilonValue 0.001
+--prob DTLZ4 --obj 3 --generations 400 --epsilonValue 0.001
+--prob DTLZ5 --obj 3 --generations 400 --epsilonValue 0.001
+--prob DTLZ6 --obj 3 --generations 400 --epsilonValue 0.001
+--prob DTLZ7 --obj 3 --generations 400 --epsilonValue 0.001
+

@@ -1,0 +1,13 @@
+------------------------------
+r-env 4.4.0
+https://docs.csc.fi/apps/r-env
+------------------------------
+Error: == irace == error in running command
+== irace == The call to targetRunner was:
+/projappl/project_2012477/implementation/adm-emo/adm_emo/NSGAII/combined_indicator/k=3/target-runner 1 4 559696394 --prob WFG4 --obj 3 --generations 400 --epsilonValue 0.001  --crossover SBX --crossoverProbability 0.957 --crossoverRepairStrategy bounds --sbxCrossoverDistributionIndex 34.4575 --mutation polynomial --mutationProbability 0.9043 --mutationRepairStrategy random --polynomialMutationDistributionIndex 336.0823 --selection random
+== irace == The output was:
+
+== irace == This is not a bug in irace, but means that something failed when running the command(s) above or they were terminated before completion. Try to run the command(s) above from the execution directory '/projappl/project_2012477/implementation/adm-emo/adm_emo/NSGAII/combined_indicator/k=3' to investigate the issue. See also Appendix B (targetRunner troubleshooting checklist) of the User Guide (https://cran.r-project.org/package=irace/vignettes/irace-package.pdf).
+Execution halted
+srun: error: r07c04: task 0: Exited with exit code 1
+srun: Terminating StepId=25508248.0
