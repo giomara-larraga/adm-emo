@@ -70,13 +70,15 @@ def main(SEED, PROB, OBJ, GENS, CROS, CROS_PROB, CROS_REP, CROS_DIST, CROS_ALPHA
     i2, obj_values = evolver.end()
 
     flattened_matrix = np.vstack(list(archive_run.values()))
+    A = np.vstack((flattened_matrix, list_ref_points))
 
 
-    ideal = np.min(flattened_matrix, axis=0)
-    nadir = np.max(flattened_matrix, axis=0)
+    epsilon = 1e-6  # Small perturbation
+    ideal = np.min(A, axis=0) - epsilon  # Slightly shift ideal point
+    nadir = np.max(A, axis=0) + epsilon  # Slightly shift nadir point
 
     RS, FD = (compute_phi_from_list(archive_run, ideal, nadir, GENS, it_learning, it_decision,list_ref_points))
-    print(RS+FD)
+    print(-1.0*(RS+FD))
 
 #if __name__ == "__main__":
 #    main(1254,"DTLZ2",3,100,"SBX",0.5,"bounds",10,0.2,"polynomial",0.5,"bounds",20,0.5,"random",None,"front",0.01)

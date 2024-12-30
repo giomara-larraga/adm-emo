@@ -1,0 +1,4 @@
+Warning: == irace == A default scenario file '/projappl/project_2012477/implementation/adm-emo/adm_emo/RVEA/combined_indicator/k=5/scenario.txt' has been found and will be read.
+slurmstepd: error: *** STEP 4012099.0 ON c2117 CANCELLED AT 2024-12-30T01:18:42 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 4012099 ON c2117 CANCELLED AT 2024-12-30T01:18:42 DUE TO TIME LIMIT ***
+srun: Job step aborted: Waiting up to 62 seconds for job step to finish.

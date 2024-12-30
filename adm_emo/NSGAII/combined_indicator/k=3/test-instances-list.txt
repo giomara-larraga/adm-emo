@@ -8,11 +8,12 @@
 # Empty lines and comments are ignored.
 #non-dominated point
 #3 objectives
---prob DTLZ1 --obj 3 --generations 400 --epsilonValue 0.001
---prob DTLZ2 --obj 3 --generations 400 --epsilonValue 0.001
---prob DTLZ3 --obj 3 --generations 400 --epsilonValue 0.001
---prob DTLZ4 --obj 3 --generations 400 --epsilonValue 0.001
---prob DTLZ5 --obj 3 --generations 400 --epsilonValue 0.001
---prob DTLZ6 --obj 3 --generations 400 --epsilonValue 0.001
---prob DTLZ7 --obj 3 --generations 400 --epsilonValue 0.001
+--prob DTLZ3 --obj 3 --generations 400 --epsilonValue 0.01
+--prob DTLZ6 --obj 3 --generations 400 --epsilonValue 0.01
+--prob DTLZ7 --obj 3 --generations 400 --epsilonValue 0.01
+--prob WFG3 --obj 3 --generations 400 --epsilonValue 0.01
+--prob WFG5 --obj 3 --generations 400 --epsilonValue 0.01
+--prob WFG7 --obj 3 --generations 400 --epsilonValue 0.01
+--prob WFG8 --obj 3 --generations 400 --epsilonValue 0.01
+--prob WFG9 --obj 3 --generations 400 --epsilonValue 0.01
 

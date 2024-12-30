@@ -32,37 +32,37 @@ def archive(
 class RVEA_archive(AutoRVEA):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.archiver = archive(
-            self.population.individuals,
-            self.population.objectives,
-            self._current_gen_count,
+        self.archives = dict()
+        self.archives[self._current_gen_count] = np.copy(
+            self.population.objectives
         )
-
+       
     def _next_gen(self):
         super()._next_gen()
-        self.archiver= archive(
-            self.population.individuals,
-            self.population.objectives,
-            self._current_gen_count,
-        )
+        local_archive= np.copy(
+            self.population.objectives)
+        self.archives[self._current_gen_count] = local_archive
+
+    def reset_archive(self):
+        self.archives = []
 
 
 class PBEA_archive(AutoPBEA):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.archives = archive(
-            self.population.individuals,
-            self.population.objectives,
-            self._current_gen_count,
+        self.archives = dict()
+        self.archives[self._current_gen_count] = np.copy(
+            self.population.objectives
         )
-
+       
     def _next_gen(self):
         super()._next_gen()
-        self.archives = archive(
-            self.population.individuals,
-            self.population.objectives,
-            self._current_gen_count,
-        )
+        local_archive= np.copy(
+            self.population.objectives)
+        self.archives[self._current_gen_count] = local_archive
+
+    def reset_archive(self):
+        self.archives = []
 
 class NSGAII_archive(RNSGAII):
     def __init__(self, *args, **kwargs):
